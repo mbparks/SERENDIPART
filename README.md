@@ -1,42 +1,40 @@
-# SERENDIPART v1.4
+# SERENDIPART v1.5
 
 SERENDIPART is a local-first Field Instrument for randomized parts discovery, supplier comparison, and cross-domain design prompts. Open `index.html` in a modern browser.
 
-## v1.2 — Weighted source network
+## v1.5 — Workflow consolidation
 
-- DigiKey and MISUMI source adapters
-- Mechanical, Electronics, Collision, and Any Part pools
-- Per-source enable switches and draw weights
-- Cross-distributor duplicate avoidance using normalized manufacturer part numbers
-- Secure server-proxy contract for live distributor integrations
+The Discover screen now separates three independent decisions:
 
-## v1.3 — Catalog packs
+1. **Draw type** — Mixed Parts, Mechanical, Electronics, Collision Lab, or Supplier Sweep.
+2. **Quantity** — 1, 2, 4, 6, or 8 products for normal draws; 1–4 pairs in Collision Lab.
+3. **Source pool** — all enabled suppliers, a supplier pack, or one compatible distributor.
 
-- Newark / element14 and TME distributor references
-- Adafruit, SparkFun, and Pololu Maker Bench pack
-- AutomationDirect Industrial Automation pack
-- Source-specific category scopes in addition to global category filters
-- Ten source catalogs and more than one hundred local discovery records
+Supplier Sweep draws one product from every eligible source in the selected pool. A full sweep can therefore return products from all ten enabled suppliers rather than stopping at two.
 
-## v1.4 — Supplier Intelligence
+Other v1.5 changes:
 
-- Compare the same manufacturer part across Mouser, DigiKey, Newark, and TME
-- Product-card supplier reference counts
-- Price, stock, lifecycle, and retrieval columns for live proxy results
-- Lifecycle warnings when live data reports obsolete, NRND, discontinued, or end-of-life status
-- Direct part-number links on draw cards, the Parts Shelf, Supplier Intelligence, and Draw History
+- Multi-product batches with Save All and Clear Draw actions
+- Multiple numbered Collision Lab pairs and independent prompts
+- One-click saving for an individual collision pair or the complete batch
+- Active-source chips showing which suppliers can contribute to the current draw
+- Clear explanation that source weights affect frequency, not quantity
+- Advanced source matrices, proxy endpoints, and category scopes moved into expandable Settings sections
+- More compact responsive result grid for larger batches
+- In-batch duplicate protection when enough unique catalog records are available
+- Automatic migration from the original two-part default to a four-part Mixed Parts draw
 
 ## Included sources
 
-Core: McMaster-Carr, MISUMI, Mouser Electronics, DigiKey, Newark / element14, TME.
+**Core distributors:** McMaster-Carr, MISUMI, Mouser Electronics, DigiKey, Newark / element14, and TME.
 
-Maker Bench: Adafruit, SparkFun, Pololu.
+**Maker Bench:** Adafruit, SparkFun, and Pololu.
 
-Industrial Automation: AutomationDirect.
+**Industrial Automation:** AutomationDirect.
 
 ## Live data
 
-Every source works locally. Mouser is preconfigured for the supplied Cloudflare Worker endpoint. Other live sources use the normalized proxy contract in `MULTISOURCE_PROXY_CONTRACT.md`. Distributor credentials must stay on the server; the browser stores only proxy URLs.
+Every source has a local discovery catalog. Mouser is preconfigured for the supplied Cloudflare Worker endpoint. Other live sources use the normalized proxy contract in `MULTISOURCE_PROXY_CONTRACT.md`. Distributor credentials must remain on the server; the browser stores only proxy URLs.
 
 ## Mouser Worker
 
@@ -44,4 +42,4 @@ The included Worker expects a Cloudflare secret named `MOUSER_API_KEY`. After de
 
 ## Storage and export
 
-The app autosaves in browser local storage. JSON export contains settings, history, saved parts, and notes. No distributor secrets are stored or exported.
+The app autosaves in browser local storage. JSON export contains settings, draw quantities, history, saved parts, and notes. No distributor secrets are stored or exported.
