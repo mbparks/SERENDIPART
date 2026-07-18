@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>SERENDIPART v1.1.3</title>
+<style>
+:root{
+  --bg:#efe9dc;
+  --panel:#fffaf0;
+  --panel-2:#f6efdf;
+  --ink:#1e251f;
+  --muted:#687066;
+  --line:#c9c0ad;
+  --accent:#ce4f2f;
+  --accent-2:#184f48;
+  --accent-soft:#f4d7cb;
+  --good:#2c765b;
+  --warn:#a26519;
+  --danger:#a6372a;
+  --shadow:0 18px 50px rgba(62,51,31,.12);
+  --radius:18px;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+[data-theme="dark"]{
+  --bg:#111513;
+  --panel:#1a201d;
+  --panel-2:#232b27;
+  --ink:#edf3eb;
+  --muted:#a8b3aa;
+  --line:#3d4942;
+  --accent:#ff7957;
+  --accent-2:#70c3b5;
+  --accent-soft:#4a2921;
+  --good:#63c49a;
+  --warn:#e8ad55;
+  --danger:#ff7b6a;
+  --shadow:0 18px 50px rgba(0,0,0,.32);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans)}
+button,input,select,textarea{font:inherit}
+button{color:inherit}
+a{color:var(--accent-2)}
+.app{min-height:100vh;display:grid;grid-template-columns:250px 1fr}
+.sidebar{position:sticky;top:0;height:100vh;padding:22px 16px;border-right:1px solid var(--line);background:color-mix(in srgb,var(--panel) 90%,transparent);backdrop-filter:blur(18px);z-index:20;display:flex;flex-direction:column;gap:18px}
+.brand{padding:10px 10px 18px;border-bottom:1px solid var(--line)}
+.brand-mark{display:flex;align-items:center;gap:12px}
+.brand-icon{width:46px;height:46px;border:2px solid var(--ink);border-radius:14px;display:grid;place-items:center;background:var(--accent);color:white;box-shadow:5px 5px 0 var(--ink);font-weight:900;font-family:var(--mono)}
+.brand h1{font-size:1rem;letter-spacing:.12em;margin:0}
+.brand p{font-size:.78rem;color:var(--muted);margin:4px 0 0}
+.version{font-family:var(--mono);font-size:.7rem;border:1px solid var(--line);border-radius:999px;padding:3px 7px;display:inline-block;margin-top:8px}
+.nav{display:grid;gap:8px}
+.nav button{border:0;background:transparent;text-align:left;padding:11px 12px;border-radius:12px;cursor:pointer;display:flex;align-items:center;gap:10px;font-weight:750}
+.nav button:hover{background:var(--panel-2)}
+.nav button.active{background:var(--ink);color:var(--panel)}
+.nav .icon{width:22px;text-align:center;font-family:var(--mono)}
+.sidebar-foot{margin-top:auto;display:grid;gap:10px}
+.status-row{display:flex;align-items:center;justify-content:space-between;font-size:.78rem;color:var(--muted);padding:0 6px}
+.led{width:10px;height:10px;border-radius:50%;background:var(--good);box-shadow:0 0 0 4px color-mix(in srgb,var(--good) 18%,transparent)}
+.theme-btn{width:100%;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--panel);cursor:pointer;font-weight:700}
+main{min-width:0}
+.topbar{position:sticky;top:0;z-index:15;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 28px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(16px)}
+.topbar h2{margin:0;font-size:1rem;letter-spacing:.08em;text-transform:uppercase}
+.topbar .right{display:flex;gap:8px;align-items:center}
+.pill{padding:7px 10px;border:1px solid var(--line);background:var(--panel);border-radius:999px;font-size:.76rem;font-weight:750;display:flex;align-items:center;gap:7px}
+.content{padding:28px;max-width:1500px;margin:0 auto}
+.view{display:none}
+.view.active{display:block}
+.hero{border:1px solid var(--line);background:var(--panel);border-radius:28px;padding:34px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-90px;top:-110px;width:310px;height:310px;border-radius:50%;border:42px solid var(--accent-soft);opacity:.9;pointer-events:none}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:900}
+.hero h3{font-size:clamp(2rem,5vw,4.6rem);line-height:.94;max-width:900px;margin:14px 0 16px;letter-spacing:-.055em}
+.hero p{max-width:760px;color:var(--muted);font-size:1.02rem;line-height:1.6;margin:0 0 28px}
+.draw-panel{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end;position:relative;z-index:2}
+.mode-group{display:flex;flex-wrap:wrap;gap:9px}
+.mode-btn{border:1px solid var(--line);background:var(--panel-2);padding:12px 15px;border-radius:13px;cursor:pointer;font-weight:800}
+.mode-btn.active{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.draw-btn{border:2px solid var(--ink);background:var(--accent);color:white;padding:17px 24px;border-radius:16px;cursor:pointer;font-weight:950;letter-spacing:.02em;box-shadow:6px 6px 0 var(--ink);min-width:240px;transition:transform .12s ease,box-shadow .12s ease}
+.draw-btn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.draw-btn:active{transform:translate(4px,4px);box-shadow:2px 2px 0 var(--ink)}
+.draw-btn[disabled]{opacity:.6;cursor:wait}
+.controls-strip{margin-top:18px;display:flex;flex-wrap:wrap;gap:9px;align-items:center;position:relative;z-index:2}
+.small-control{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:11px;background:var(--panel-2);padding:8px 10px;font-size:.78rem}
+.small-control select,.small-control input{border:0;background:transparent;color:inherit;outline:0;max-width:150px}
+.results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:22px}
+.results.single{grid-template-columns:minmax(0,900px)}
+.empty-state{margin-top:22px;border:1px dashed var(--line);border-radius:20px;padding:42px;text-align:center;color:var(--muted);background:color-mix(in srgb,var(--panel) 65%,transparent)}
+.product-card{border:1px solid var(--line);background:var(--panel);border-radius:22px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:600px}
+.product-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--line);gap:10px}
+.provider{font-family:var(--mono);font-size:.76rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.live-badge{font-size:.7rem;padding:5px 8px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);font-weight:800}
+.product-image{height:220px;display:grid;place-items:center;background:linear-gradient(145deg,var(--panel-2),color-mix(in srgb,var(--accent-soft) 45%,var(--panel)));border-bottom:1px solid var(--line);overflow:hidden;position:relative}
+.product-image img{width:100%;height:100%;object-fit:contain;padding:18px;background:white}
+.part-glyph{width:150px;height:150px;border:3px solid var(--ink);border-radius:28px;display:grid;place-items:center;transform:rotate(-4deg);box-shadow:12px 12px 0 color-mix(in srgb,var(--accent) 65%,transparent);background:var(--panel)}
+.part-glyph span{font-size:3.4rem;font-weight:950;font-family:var(--mono);transform:rotate(4deg)}
+.product-body{padding:20px;display:flex;flex-direction:column;gap:16px;flex:1}
+.product-kicker{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.75rem;color:var(--muted)}
+.category-tag{border:1px solid var(--line);border-radius:999px;padding:5px 8px;background:var(--panel-2);font-weight:750;color:var(--ink)}
+.product-title{font-size:1.45rem;line-height:1.15;margin:0;letter-spacing:-.025em}
+.part-number{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:-7px}.part-number-label{font-size:.66rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.part-number-link,.part-number-value{font-family:var(--mono);font-size:.88rem;font-weight:850;color:var(--ink);word-break:break-word}.part-number-link{text-decoration-thickness:1px;text-underline-offset:3px}.part-number-link:hover{text-decoration-thickness:2px}.part-number-secondary{font-family:var(--mono);font-size:.72rem;color:var(--muted);word-break:break-word}
+.description{line-height:1.55;color:var(--muted);margin:0}
+.spec-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.spec{border:1px solid var(--line);border-radius:12px;background:var(--panel-2);padding:10px}
+.spec strong{display:block;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.spec span{font-size:.85rem;font-weight:750;word-break:break-word}
+.price-line{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.price{font-size:1.18rem;font-weight:950}
+.availability{font-size:.75rem;color:var(--muted);text-align:right}
+.card-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+.card-actions button,.card-actions a{border:1px solid var(--line);border-radius:11px;background:var(--panel-2);padding:9px 11px;text-decoration:none;font-weight:800;font-size:.78rem;cursor:pointer;color:var(--ink)}
+.card-actions .primary{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.collision{margin-top:20px;border:2px solid var(--ink);border-radius:22px;background:var(--accent-soft);padding:22px;box-shadow:7px 7px 0 var(--ink)}
+.collision h4{margin:0 0 8px;font-size:1.35rem}
+.collision p{margin:0;color:color-mix(in srgb,var(--ink) 78%,transparent);line-height:1.55}
+.collision .prompt{font-size:1.08rem;font-weight:850;margin:14px 0}
+.collision textarea{width:100%;min-height:100px;resize:vertical;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);padding:12px}
+.collision-actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:18px}
+.section-head h3{font-size:2rem;margin:0;letter-spacing:-.035em}
+.section-head p{margin:5px 0 0;color:var(--muted)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.toolbar input,.toolbar select{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:11px;padding:10px 12px}
+.toolbar button{border:1px solid var(--line);background:var(--panel);border-radius:11px;padding:10px 12px;font-weight:800;cursor:pointer}
+.library-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:14px}
+.library-card{border:1px solid var(--line);background:var(--panel);border-radius:18px;padding:17px;display:flex;flex-direction:column;gap:11px;min-height:250px}
+.library-card h4{margin:0;font-size:1.02rem;line-height:1.25}
+.library-card p{margin:0;color:var(--muted);font-size:.85rem;line-height:1.45}
+.library-meta{display:flex;gap:6px;flex-wrap:wrap}
+.library-meta span{font-size:.68rem;border:1px solid var(--line);border-radius:999px;padding:4px 7px;background:var(--panel-2)}
+.library-card textarea{width:100%;min-height:70px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);color:var(--ink);padding:9px;resize:vertical}
+.library-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:auto}
+.library-actions button,.library-actions a{font-size:.72rem;border:1px solid var(--line);background:var(--panel-2);border-radius:9px;padding:7px 9px;cursor:pointer;text-decoration:none;color:var(--ink);font-weight:750}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
+table{width:100%;border-collapse:collapse;min-width:880px}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);font-size:.8rem;vertical-align:top}
+th{position:sticky;top:0;background:var(--panel-2);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+.source-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:var(--accent)}
+.source-dot.mouser{background:var(--accent-2)}
+.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.setting-card{border:1px solid var(--line);background:var(--panel);border-radius:18px;padding:20px}
+.setting-card.full{grid-column:1/-1}
+.setting-card h4{margin:0 0 6px;font-size:1.05rem}
+.setting-card .help{color:var(--muted);font-size:.82rem;line-height:1.5;margin:0 0 16px}
+.field{display:grid;gap:6px;margin-bottom:13px}
+.field label{font-size:.75rem;font-weight:850}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);border-radius:11px;padding:10px 11px}
+.field small{font-size:.7rem;color:var(--muted);line-height:1.4}
+.check-row{display:flex;align-items:center;gap:9px;margin:10px 0;font-size:.82rem}
+.category-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.category-check{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);padding:9px;font-size:.76rem}
+.settings-actions{display:flex;gap:9px;flex-wrap:wrap}
+.settings-actions button,.file-label{border:1px solid var(--line);background:var(--panel-2);border-radius:11px;padding:10px 12px;font-weight:800;cursor:pointer}
+.settings-actions .danger{color:var(--danger)}
+.file-label input{display:none}
+.toast{position:fixed;right:24px;bottom:24px;z-index:100;background:var(--ink);color:var(--panel);padding:12px 15px;border-radius:12px;box-shadow:var(--shadow);font-weight:800;font-size:.82rem;transform:translateY(140px);opacity:0;transition:.22s}
+.toast.show{transform:translateY(0);opacity:1}
+.connection-status{margin-top:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--soft);font-size:.78rem;line-height:1.45;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+.connection-status.ok{border-color:var(--success);color:var(--ink)}
+.connection-status.error{border-color:var(--danger);color:var(--danger)}
+.connection-status.testing{border-color:var(--accent);color:var(--ink)}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:80;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-backdrop.open{display:flex}
+.modal{width:min(720px,100%);max-height:88vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:22px}
+.modal h3{margin:0 0 8px}
+.modal p{color:var(--muted);line-height:1.5}
+.modal textarea{width:100%;min-height:160px;border:1px solid var(--line);border-radius:12px;background:var(--panel-2);color:var(--ink);padding:12px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.modal-actions button{border:1px solid var(--line);background:var(--panel-2);border-radius:10px;padding:9px 12px;font-weight:800;cursor:pointer}
+.mobile-nav{display:none}
+.loading{display:inline-flex;gap:5px;align-items:center}
+.loading i{width:6px;height:6px;border-radius:50%;background:currentColor;animation:bounce .8s infinite alternate}
+.loading i:nth-child(2){animation-delay:.18s}.loading i:nth-child(3){animation-delay:.36s}
+@keyframes bounce{to{transform:translateY(-5px);opacity:.45}}
+@media(max-width:980px){
+  .app{grid-template-columns:1fr}.sidebar{display:none}.mobile-nav{display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:50;background:var(--ink);border-radius:16px;padding:7px;gap:4px;box-shadow:var(--shadow)}
+  .mobile-nav button{flex:1;border:0;background:transparent;color:var(--panel);border-radius:10px;padding:10px 4px;font-size:.68rem;font-weight:800}.mobile-nav button.active{background:var(--accent);color:white}
+  .topbar{padding:14px 18px}.content{padding:18px 18px 90px}.hero{padding:25px}.draw-panel{grid-template-columns:1fr}.draw-btn{width:100%}.results{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr}.setting-card.full{grid-column:auto}
+}
+@media(max-width:620px){
+  .topbar .right .pill:nth-child(1){display:none}.hero h3{font-size:2.45rem}.spec-grid{grid-template-columns:1fr}.section-head{align-items:flex-start;flex-direction:column}.product-card{min-height:0}.product-image{height:180px}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><div class="brand-icon">SP</div><div><h1>SERENDIPART</h1><p>Parts discovery instrument</p></div></div>
+      <span class="version">FI • v1.1.3</span>
+    </div>
+    <nav class="nav" id="desktopNav">
+      <button class="active" data-view="discover"><span class="icon">01</span> Discover</button>
+      <button data-view="shelf"><span class="icon">02</span> Parts Shelf</button>
+      <button data-view="history"><span class="icon">03</span> Draw History</button>
+      <button data-view="settings"><span class="icon">04</span> Settings</button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="status-row"><span>Autosave</span><span class="led" id="saveLed"></span></div>
+      <div class="status-row"><span>Draws</span><strong id="drawCountSide">0</strong></div>
+      <div class="status-row"><span>Saved</span><strong id="saveCountSide">0</strong></div>
+      <button class="theme-btn" id="themeToggle">Toggle appearance</button>
+    </div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <h2 id="viewTitle">Discover</h2>
+      <div class="right">
+        <div class="pill"><span class="led"></span><span id="dataStatus">Local catalog ready</span></div>
+        <div class="pill" id="clockPill">—</div>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="view active" id="view-discover">
+        <div class="hero">
+          <div class="eyebrow">Draw → Inspect → Connect → Imagine → Capture</div>
+          <h3>Find the part you did not know you needed.</h3>
+          <p>Draw a mechanical product from McMaster Carr, an electronic component from Mouser Electronics, or collide one of each into a design prompt.</p>
+          <div class="draw-panel">
+            <div>
+              <div class="mode-group" id="modeGroup">
+                <button class="mode-btn" data-mode="mcmaster">McMaster Carr</button>
+                <button class="mode-btn" data-mode="mouser">Mouser</button>
+                <button class="mode-btn active" data-mode="collision">Collision</button>
+              </div>
+              <div class="controls-strip">
+                <label class="small-control">Category <select id="quickCategory"><option value="all">Any included category</option></select></label>
+                <label class="small-control"><input type="checkbox" id="quickFresh" checked> Avoid recent repeats</label>
+                <label class="small-control"><input type="checkbox" id="quickStock"> In stock when live</label>
+              </div>
+            </div>
+            <button class="draw-btn" id="drawButton">DRAW TWO PARTS</button>
+          </div>
+        </div>
+
+        <div id="resultsArea">
+          <div class="empty-state" id="emptyState">
+            <strong>No parts drawn yet.</strong><br>
+            Choose a source and press the draw button. The first draw works entirely offline.
+          </div>
+          <div class="results" id="resultCards"></div>
+          <div id="collisionArea"></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-shelf">
+        <div class="section-head">
+          <div><h3>Parts Shelf</h3><p>Saved discoveries, notes, and possible uses.</p></div>
+          <div class="toolbar"><input id="shelfSearch" type="search" placeholder="Search saved parts"><select id="shelfSource"><option value="all">All sources</option><option value="mcmaster">McMaster Carr</option><option value="mouser">Mouser</option></select></div>
+        </div>
+        <div class="library-grid" id="shelfGrid"></div>
+      </section>
+
+      <section class="view" id="view-history">
+        <div class="section-head">
+          <div><h3>Draw History</h3><p>A searchable record of what appeared and when.</p></div>
+          <div class="toolbar"><input id="historySearch" type="search" placeholder="Search history"><select id="historySource"><option value="all">All sources</option><option value="mcmaster">McMaster Carr</option><option value="mouser">Mouser</option></select><button id="clearHistory">Clear history</button></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>When</th><th>Source</th><th>Product</th><th>Part or reference</th><th>Category</th><th>Mode</th><th>Saved</th><th>Link</th></tr></thead><tbody id="historyBody"></tbody></table></div>
+      </section>
+
+      <section class="view" id="view-settings">
+        <div class="section-head"><div><h3>Settings</h3><p>Choose how random draws work and connect live data sources.</p></div></div>
+        <div class="settings-grid">
+          <article class="setting-card">
+            <h4>Randomization</h4><p class="help">v1.1 adds category control, duplicate avoidance, and source specific live fallbacks.</p>
+            <div class="field"><label for="repeatWindow">Recent repeat window</label><input id="repeatWindow" type="number" min="0" max="100" value="20"><small>Products seen within this many draws are excluded when possible.</small></div>
+            <div class="field"><label for="defaultMode">Default draw mode</label><select id="defaultMode"><option value="collision">Collision</option><option value="mcmaster">McMaster Carr</option><option value="mouser">Mouser</option></select></div>
+            <label class="check-row"><input type="checkbox" id="preferLive"> Prefer live data when configured</label>
+            <label class="check-row"><input type="checkbox" id="fallbackLocal" checked> Fall back to local catalog on API errors</label>
+          </article>
+
+          <article class="setting-card">
+            <h4>Mouser Search API</h4><p class="help">Use a server proxy for public deployment. Direct browser mode is included for local experiments, but may be blocked by CORS and exposes the key to the browser.</p>
+            <div class="field"><label for="mouserMode">Connection mode</label><select id="mouserMode"><option value="local">Local sample catalog</option><option value="proxy">Proxy endpoint</option><option value="direct">Direct API key</option></select></div>
+            <div class="field"><label for="mouserProxy">Proxy endpoint</label><input id="mouserProxy" type="url" placeholder="https://your-worker.example.workers.dev/mouser" value="https://mouserparts.mike-268.workers.dev/mouser"></div>
+            <div class="field"><label for="mouserKey">Mouser API key</label><input id="mouserKey" type="password" autocomplete="off" placeholder="Stored only in this browser"><small>Only used in direct mode.</small></div>
+            <button class="theme-btn" id="testMouser">Test Mouser connection</button>
+            <div class="connection-status" id="mouserStatus">Not tested in this browser.</div>
+          </article>
+
+          <article class="setting-card">
+            <h4>McMaster Carr Product API</h4><p class="help">The official API is available to approved customers and requires a client certificate, login, and product subscriptions. SERENDIPART therefore uses a local discovery catalog unless you provide a server proxy.</p>
+            <div class="field"><label for="mcmasterMode">Connection mode</label><select id="mcmasterMode"><option value="local">Local discovery catalog</option><option value="proxy">Approved customer proxy</option></select></div>
+            <div class="field"><label for="mcmasterProxy">Proxy endpoint</label><input id="mcmasterProxy" type="url" placeholder="https://your-server.example/api/random-mcmaster"></div>
+            <button class="theme-btn" id="testMcMaster">Test McMaster connection</button>
+          </article>
+
+          <article class="setting-card">
+            <h4>Display and capture</h4><p class="help">Control what appears on the product cards and how notes are retained.</p>
+            <label class="check-row"><input type="checkbox" id="showImages" checked> Show product images</label>
+            <label class="check-row"><input type="checkbox" id="showPrices" checked> Show available price information</label>
+            <label class="check-row"><input type="checkbox" id="saveCollisionNotes" checked> Save collision notes with the paired draw</label>
+            <div class="field"><label for="currencyLabel">Currency label</label><input id="currencyLabel" value="USD" maxlength="8"></div>
+          </article>
+
+          <article class="setting-card full">
+            <h4>Included categories</h4><p class="help">Unchecked categories are excluded from local draws and from the live Mouser keyword deck.</p>
+            <div class="category-list" id="categoryList"></div>
+          </article>
+
+          <article class="setting-card full">
+            <h4>Data management</h4><p class="help">Everything is stored locally in your browser. Export creates a complete portable snapshot.</p>
+            <div class="settings-actions">
+              <button id="exportData">Export JSON</button>
+              <label class="file-label">Import JSON<input id="importData" type="file" accept="application/json"></label>
+              <button id="loadDemo">Load demo activity</button>
+              <button class="danger" id="resetApp">Reset instrument</button>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<nav class="mobile-nav" id="mobileNav"><button class="active" data-view="discover">Discover</button><button data-view="shelf">Shelf</button><button data-view="history">History</button><button data-view="settings">Settings</button></nav>
+<div class="toast" id="toast"></div>
+<div class="modal-backdrop" id="noteModal"><div class="modal"><h3 id="noteTitle">Add note</h3><p id="noteSubtitle"></p><textarea id="noteText" placeholder="Possible use, observation, connection, or question…"></textarea><div class="modal-actions"><button data-close-modal>Cancel</button><button id="saveNote">Save note</button></div></div></div>
+
+<script>
+'use strict';
+
+const APP_VERSION = '1.1.3';
+const STORAGE_KEY = 'serendipart.v1.1';
+const DEFAULT_MOUSER_PROXY = 'https://mouserparts.mike-268.workers.dev/mouser';
+
+const categoryDefinitions = [
+  {id:'motion', label:'Motion and mechanisms', mouser:['motor','encoder','stepper motor','linear actuator']},
+  {id:'fastening', label:'Fastening and joining', mouser:['connector','terminal block','wire splice','board connector']},
+  {id:'sensing', label:'Sensors and measurement', mouser:['sensor','accelerometer','pressure sensor','temperature sensor']},
+  {id:'power', label:'Power and energy', mouser:['power supply','dc dc converter','battery holder','power module']},
+  {id:'control', label:'Control and computing', mouser:['microcontroller','development board','logic IC','embedded module']},
+  {id:'fluid', label:'Fluid and pneumatic', mouser:['pressure transducer','flow sensor','solenoid valve','pump']},
+  {id:'structure', label:'Structure and enclosure', mouser:['enclosure','heat sink','din rail','equipment case']},
+  {id:'optical', label:'Light and optical', mouser:['LED','photodiode','laser diode','optical sensor']},
+  {id:'thermal', label:'Thermal management', mouser:['fan','heat sink','temperature switch','thermal interface']},
+  {id:'interface', label:'Human interface', mouser:['switch','pushbutton','display','rotary encoder']}
+];
+
+const mcmasterCatalog = [
+  {id:'mc-spring-plunger',provider:'mcmaster',title:'Spring Plunger',partNumber:'Product family',category:'fastening',description:'A threaded body containing a spring loaded nose for indexing, locating, latching, and applying repeatable pressure.',specs:{Mechanism:'Spring loaded nose','Typical use':'Indexing and detents',Mounting:'Threaded body',Material:'Steel or stainless options'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/spring-plungers/',glyph:'↧',tags:['detent','indexing','fixture']},
+  {id:'mc-vibration-mount',provider:'mcmaster',title:'Vibration Damping Sandwich Mount',partNumber:'Product family',category:'structure',description:'An elastomer element bonded between threaded metal ends to isolate machinery, instruments, and panels from vibration.',specs:{Function:'Vibration isolation',Load:'Compression or shear',Mounting:'Threaded studs or inserts',Material:'Rubber with metal ends'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/vibration-damping-mounts/',glyph:'≈',tags:['isolation','machine','rubber']},
+  {id:'mc-shaft-collar',provider:'mcmaster',title:'Two Piece Clamping Shaft Collar',partNumber:'Product family',category:'motion',description:'A split collar that clamps around a shaft without marring it and can act as a stop, spacer, or component mount.',specs:{Style:'Two piece clamp','Typical use':'Shaft stop or hub',Installation:'No shaft end access required',Material:'Steel, aluminum, or stainless'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/shaft-collars/',glyph:'◉',tags:['shaft','clamp','motion']},
+  {id:'mc-torsion-spring',provider:'mcmaster',title:'Torsion Spring',partNumber:'Product family',category:'motion',description:'A helical spring that stores rotational energy and applies torque through projecting legs.',specs:{'Load type':'Rotational torque',Form:'Helical coil with legs','Typical use':'Return or counterbalance',Material:'Music wire or stainless'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/torsion-springs/',glyph:'∿',tags:['spring','torque','return']},
+  {id:'mc-timing-belt',provider:'mcmaster',title:'High Torque Timing Belt',partNumber:'Product family',category:'motion',description:'A toothed synchronous belt for transmitting motion without slip between matching pulleys.',specs:{'Drive type':'Synchronous toothed belt',Slip:'No nominal slip','Typical use':'Positioned motion transfer',Material:'Reinforced elastomer'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/timing-belts/',glyph:'▰',tags:['belt','synchronous','drive']},
+  {id:'mc-acme-lead-screw',provider:'mcmaster',title:'Acme Lead Screw',partNumber:'Product family',category:'motion',description:'A power transmission screw with a trapezoidal thread for converting rotary motion into linear movement.',specs:{'Thread form':'Acme',Function:'Rotary to linear motion','Typical use':'Positioning and clamping',Material:'Steel or stainless'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/acme-lead-screws-and-nuts/',glyph:'⇄',tags:['linear','screw','positioning']},
+  {id:'mc-vacuum-cup',provider:'mcmaster',title:'Vacuum Suction Cup',partNumber:'Product family',category:'fluid',description:'A flexible cup that grips smooth surfaces when air is evacuated from its internal cavity.',specs:{'Holding method':'Vacuum',Surface:'Smooth and nonporous','Typical use':'Lifting and pick and place',Material:'Rubber, silicone, or urethane'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/vacuum-cups/',glyph:'∪',tags:['vacuum','grip','handling']},
+  {id:'mc-ball-transfer',provider:'mcmaster',title:'Ball Transfer',partNumber:'Product family',category:'motion',description:'A load bearing ball supported by smaller recirculating balls, allowing material to move in any horizontal direction.',specs:{Motion:'Omnidirectional rolling','Typical use':'Conveying and positioning',Mounting:'Flange, stud, or press fit',Load:'Varies by size'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/ball-transfers/',glyph:'●',tags:['conveyor','omnidirectional','material handling']},
+  {id:'mc-quick-disconnect',provider:'mcmaster',title:'Quick Disconnect Tube Coupling',partNumber:'Product family',category:'fluid',description:'A push to connect or latch coupling that joins fluid lines quickly and can be disconnected without tools.',specs:{Function:'Rapid fluid connection','Typical media':'Air, water, or compatible fluids',Connection:'Push to connect or latch',Body:'Plastic or metal'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/quick-disconnect-tube-couplings/',glyph:'⇆',tags:['tube','coupling','pneumatic']},
+  {id:'mc-toggle-clamp',provider:'mcmaster',title:'Hold Down Toggle Clamp',partNumber:'Product family',category:'fastening',description:'An over center linkage that applies repeatable clamping force and locks in position with a short handle movement.',specs:{Mechanism:'Over center linkage','Typical use':'Fixtures and jigs',Action:'Fast manual clamp',Mounting:'Base flange'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/toggle-clamps/',glyph:'⌁',tags:['fixture','clamp','linkage']},
+  {id:'mc-shoulder-screw',provider:'mcmaster',title:'Precision Shoulder Screw',partNumber:'Product family',category:'fastening',description:'A fastener with a smooth accurately sized shoulder that acts as a bearing surface, axle, guide, or pivot.',specs:{Feature:'Ground shoulder','Typical use':'Pivot or guide',Thread:'Smaller than shoulder',Material:'Alloy or stainless steel'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/shoulder-screws/',glyph:'⊣',tags:['pivot','fastener','axle']},
+  {id:'mc-cable-carrier',provider:'mcmaster',title:'Enclosed Cable and Hose Carrier',partNumber:'Product family',category:'structure',description:'An articulated chain that guides and protects moving cables, tubing, and hoses through repetitive machine travel.',specs:{Function:'Cable guidance',Motion:'Repeated linear or rotary travel',Protection:'Enclosed links','Typical use':'CNC and automation'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/cable-and-hose-carriers/',glyph:'▱',tags:['cable','automation','motion']},
+  {id:'mc-wave-spring',provider:'mcmaster',title:'Wave Disc Spring',partNumber:'Product family',category:'motion',description:'A compact spring washer with formed waves that supplies axial force in a small installation space.',specs:{'Load type':'Axial',Form:'Waved ring or disc','Typical use':'Preload and tolerance takeup',Space:'Compact axial envelope'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/wave-disc-springs/',glyph:'≋',tags:['preload','compact','spring']},
+  {id:'mc-dovetail-slide',provider:'mcmaster',title:'Dovetail Linear Slide',partNumber:'Product family',category:'motion',description:'A manually adjusted slide using interlocking dovetail ways for guided linear positioning.',specs:{Motion:'Linear','Guide style':'Dovetail',Adjustment:'Manual screw or hand position','Typical use':'Fixtures and optical setups'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/dovetail-slides/',glyph:'↔',tags:['slide','positioning','fixture']},
+  {id:'mc-bellows',provider:'mcmaster',title:'Flexible Bellows',partNumber:'Product family',category:'structure',description:'An accordion shaped cover or connector that accommodates movement while shielding mechanisms or carrying air.',specs:{Form:'Accordion bellows',Function:'Protection or flexible connection',Motion:'Axial and limited angular',Material:'Rubber, fabric, or plastic'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/bellows/',glyph:'≣',tags:['cover','flexible','protection']},
+  {id:'mc-caster',provider:'mcmaster',title:'Leveling Swivel Caster',partNumber:'Product family',category:'structure',description:'A caster combining rolling mobility with a deployable leveling pad that stabilizes equipment after positioning.',specs:{Functions:'Roll and level',Steering:'Swivel','Typical use':'Mobile machines and benches',Locking:'Leveling foot'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/leveling-casters/',glyph:'◌',tags:['mobility','leveling','shop']},
+  {id:'mc-air-cylinder',provider:'mcmaster',title:'Compact Air Cylinder',partNumber:'Product family',category:'fluid',description:'A pneumatic actuator that converts compressed air pressure into controlled linear force and motion.',specs:{Input:'Compressed air',Output:'Linear force',Action:'Single or double acting','Typical use':'Automation and clamping'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/air-cylinders/',glyph:'⇥',tags:['pneumatic','actuator','linear']},
+  {id:'mc-optical-post',provider:'mcmaster',title:'Optical Component Mounting Post',partNumber:'Product family',category:'optical',description:'A rigid precision post for supporting lenses, sensors, cameras, and test fixtures at an adjustable height.',specs:{Function:'Rigid component support',Adjustment:'Height and rotation via clamps','Typical use':'Optics and instrumentation',Material:'Stainless steel'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/optical-component-mounting-posts/',glyph:'†',tags:['optics','mount','instrument']},
+  {id:'mc-heat-sink',provider:'mcmaster',title:'Adhesive Back Heat Sink',partNumber:'Product family',category:'thermal',description:'A finned metal heat spreader with thermal adhesive for attaching directly to a warm component or enclosure surface.',specs:{Function:'Passive heat dissipation',Mounting:'Thermal adhesive',Material:'Aluminum','Typical use':'Electronics and enclosures'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/heat-sinks/',glyph:'♨',tags:['thermal','aluminum','electronics']},
+  {id:'mc-panel-latch',provider:'mcmaster',title:'Quarter Turn Panel Latch',partNumber:'Product family',category:'fastening',description:'A compact rotating latch that secures access panels and releases them with a quarter turn of a tool or handle.',specs:{Action:'Quarter turn','Typical use':'Panels and enclosures',Access:'Tool or hand operated',Mounting:'Panel cutout'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/quarter-turn-latches/',glyph:'↻',tags:['panel','latch','enclosure']},
+  {id:'mc-flex-coupling',provider:'mcmaster',title:'Helical Beam Shaft Coupling',partNumber:'Product family',category:'motion',description:'A one piece slotted coupling that transmits torque while accommodating small angular, parallel, and axial misalignment.',specs:{Function:'Torque transmission',Compliance:'Angular, parallel, and axial',Backlash:'Low','Typical use':'Encoders and small drives'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/flexible-shaft-couplings/',glyph:'∞',tags:['coupling','shaft','alignment']},
+  {id:'mc-edge-grip',provider:'mcmaster',title:'Edge Grip for Panels',partNumber:'Product family',category:'structure',description:'A clamp or channel that grips sheet material at its edge without drilling holes through the panel.',specs:{Function:'Panel edge attachment','Typical use':'Guards, signs, and displays','Panel work':'No through hole required',Material:'Metal or polymer'},price:'See supplier',availability:'Open catalog for current selection',productUrl:'https://www.mcmaster.com/products/panel-clamps/',glyph:'⊔',tags:['panel','clamp','display']}
+];
+
+const mouserCatalog = [
+  {id:'mo-mems-accelerometer',provider:'mouser',title:'Three Axis MEMS Accelerometer',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'sensing',description:'A compact solid state sensor that reports acceleration along three orthogonal axes for motion, vibration, tilt, and impact measurements.',specs:{Output:'Digital or analog',Axes:'3','Typical interface':'I²C or SPI',Applications:'Motion and vibration'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/sensors/motion-position-sensors/accelerometers/',glyph:'XYZ',tags:['motion','vibration','sensor']},
+  {id:'mo-hall-sensor',provider:'mouser',title:'Hall Effect Magnetic Sensor',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'sensing',description:'A semiconductor sensor that detects magnetic field strength or magnetic switching events without physical contact.',specs:{Stimulus:'Magnetic field',Output:'Digital switch or analog',Contact:'Noncontact',Applications:'Position and speed'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/sensors/magnetic-sensors/hall-effect-magnetic-sensors/',glyph:'H',tags:['magnetic','position','noncontact']},
+  {id:'mo-pressure',provider:'mouser',title:'Board Mount Pressure Sensor',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'fluid',description:'A compact transducer that converts gas or liquid pressure into a calibrated electrical signal.',specs:{Input:'Pressure',Output:'Analog or digital',Mounting:'Board or port',Applications:'Pneumatics and barometry'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/sensors/pressure-sensors/',glyph:'P',tags:['pressure','fluid','measurement']},
+  {id:'mo-load-cell-interface',provider:'mouser',title:'Precision Load Cell ADC',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'sensing',description:'A low noise analog front end and converter designed to measure tiny bridge sensor signals from load cells and strain gauges.',specs:{Input:'Differential bridge signal',Output:'Digital measurement',Feature:'Low noise gain',Applications:'Force and weight'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/semiconductors/data-converter-ics/analog-to-digital-converters-adc/',glyph:'Σ',tags:['load cell','ADC','precision']},
+  {id:'mo-stepper-driver',provider:'mouser',title:'Microstepping Motor Driver',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'motion',description:'An integrated power driver that regulates winding current and sequences phases to control a stepper motor smoothly.',specs:{Motor:'Bipolar stepper',Control:'Step and direction or serial',Feature:'Microstepping',Applications:'Positioned motion'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/semiconductors/driver-ics/motor-motion-ignition-controllers-drivers/',glyph:'M',tags:['motor','motion','driver']},
+  {id:'mo-rotary-encoder',provider:'mouser',title:'Incremental Rotary Encoder',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'interface',description:'A rotating electromechanical input that produces pulses representing angular movement and often includes a push switch.',specs:{Output:'Quadrature pulses',Input:'Rotation',Optional:'Push switch',Applications:'User input and position'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/electromechanical/encoders/',glyph:'↺',tags:['encoder','rotation','interface']},
+  {id:'mo-oled',provider:'mouser',title:'Small Graphic OLED Display',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'interface',description:'A high contrast self emissive display module suited to compact instruments, controls, and status panels.',specs:{Display:'Graphic OLED',Interface:'I²C or SPI',Lighting:'Self emissive',Applications:'Instrument interface'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/optoelectronics/displays/oled-displays-accessories/',glyph:'▣',tags:['display','OLED','interface']},
+  {id:'mo-eink',provider:'mouser',title:'Electronic Paper Display Module',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'interface',description:'A reflective bistable display that retains an image with little or no power and remains readable in bright light.',specs:{Display:'Electronic paper',Power:'Mostly during updates',Readability:'Reflective daylight',Applications:'Labels and persistent status'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/optoelectronics/displays/e-paper-displays/',glyph:'EP',tags:['display','low power','persistent']},
+  {id:'mo-uv-led',provider:'mouser',title:'Ultraviolet LED',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'optical',description:'A solid state emitter producing ultraviolet light for curing, fluorescence, sensing, sterilization research, or optical experiments.',specs:{Output:'Ultraviolet light',Package:'Surface mount or through hole',Drive:'Constant current',Applications:'Curing and fluorescence'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/optoelectronics/led-lighting/led-emitters/uv-leds/',glyph:'UV',tags:['light','ultraviolet','optical']},
+  {id:'mo-tof',provider:'mouser',title:'Time of Flight Distance Sensor',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'optical',description:'An optical ranging sensor that estimates distance by measuring the travel time of emitted light.',specs:{Measurement:'Distance',Method:'Time of flight',Interface:'Usually I²C',Applications:'Presence and ranging'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/sensors/optical-sensors/distance-measuring-sensors/',glyph:'⇢',tags:['distance','optical','ranging']},
+  {id:'mo-solenoid',provider:'mouser',title:'Miniature Push Pull Solenoid',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'motion',description:'An electromagnetic actuator that produces a short linear stroke when its coil is energized.',specs:{Output:'Linear stroke',Input:'DC coil power',Action:'Push or pull',Applications:'Latches and mechanisms'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/electromechanical/solenoids-actuators/',glyph:'⇥',tags:['actuator','solenoid','linear']},
+  {id:'mo-lora',provider:'mouser',title:'Sub GHz LoRa Radio Module',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'control',description:'A low power long range radio module for telemetry, distributed sensors, and remote control over sub GHz bands.',specs:{Radio:'LoRa or LoRaWAN capable',Band:'Region dependent sub GHz',Range:'Long range, low data rate',Applications:'Remote sensing'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/rf-wireless/rf-modules/lorawan-modules/',glyph:'RF',tags:['radio','telemetry','wireless']},
+  {id:'mo-supercap',provider:'mouser',title:'Electric Double Layer Supercapacitor',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'power',description:'A high capacitance energy storage component suited to pulse power, short backup intervals, and energy harvesting buffers.',specs:{Storage:'Electrostatic double layer',Feature:'High cycle life',Use:'Pulse or backup energy',Constraint:'Low cell voltage'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/passive-components/capacitors/supercapacitors-ultracapacitors/',glyph:'C',tags:['energy','storage','power']},
+  {id:'mo-energy-harvester',provider:'mouser',title:'Energy Harvesting Power IC',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'power',description:'A power management circuit optimized to collect tiny amounts of energy from solar cells, thermal generators, or vibration sources.',specs:{Input:'Low level harvested energy',Output:'Regulated storage or load power',Feature:'Low startup voltage',Applications:'Autonomous sensors'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/semiconductors/power-management-ics/energy-harvesting-power-management-ics/',glyph:'⚡',tags:['harvesting','low power','autonomous']},
+  {id:'mo-microcontroller',provider:'mouser',title:'Low Power Microcontroller',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'control',description:'A programmable integrated circuit combining processor, memory, timers, communication peripherals, and general purpose input output.',specs:{Function:'Embedded control',Peripherals:'Timers, ADC, serial buses',Power:'Low power options',Applications:'General embedded systems'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/semiconductors/embedded-processors-controllers/microcontrollers-mcu/',glyph:'µC',tags:['embedded','control','programmable']},
+  {id:'mo-rp2040-board',provider:'mouser',title:'Compact Microcontroller Development Board',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'control',description:'A ready to program board that exposes a microcontroller, USB connection, power regulation, and accessible input output pins.',specs:{Form:'Development board',Programming:'USB','I/O':'Headers or pads',Applications:'Rapid prototyping'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/embedded-solutions/engineering-tools/development-boards-kits-arm/',glyph:'PCB',tags:['prototype','board','embedded']},
+  {id:'mo-cap-touch',provider:'mouser',title:'Capacitive Touch Controller',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'interface',description:'A controller that senses changes in capacitance to create buttons, sliders, or proximity controls behind nonconductive surfaces.',specs:{Input:'Capacitive electrodes',Output:'Digital touch state',Interface:'I²C, SPI, or GPIO',Applications:'Sealed controls'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/semiconductors/data-converter-ics/touch-screen-controllers/',glyph:'☝',tags:['touch','interface','sealed']},
+  {id:'mo-peltier',provider:'mouser',title:'Thermoelectric Peltier Module',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'thermal',description:'A solid state heat pump that moves heat from one face to the other when direct current flows through it.',specs:{Effect:'Thermoelectric heat pumping',Input:'DC current',Output:'Hot side and cold side',Applications:'Heating and cooling'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/thermal-management/thermoelectric-modules/',glyph:'ΔT',tags:['thermal','cooling','solid state']},
+  {id:'mo-blower',provider:'mouser',title:'Miniature Centrifugal Blower',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'thermal',description:'A compact fan that accelerates air through a scroll housing to create directed flow and useful static pressure.',specs:{Flow:'Directed centrifugal air',Drive:'Brushless DC',Feature:'Higher pressure than axial fan',Applications:'Compact cooling and air jets'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/thermal-management/fans-blowers/blowers/',glyph:'◔',tags:['airflow','cooling','blower']},
+  {id:'mo-ip-rated-switch',provider:'mouser',title:'Sealed Illuminated Pushbutton',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'interface',description:'A panel switch combining tactile actuation, environmental sealing, and integrated illumination.',specs:{Action:'Momentary or maintained',Feature:'Illuminated',Mounting:'Panel',Protection:'Sealed options'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/electromechanical/switches/pushbutton-switches/',glyph:'●',tags:['button','sealed','panel']},
+  {id:'mo-terminal',provider:'mouser',title:'Pluggable Terminal Block',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'fastening',description:'A separable wire connector that mates a removable plug with a board or panel header for serviceable field wiring.',specs:{Connection:'Screw or spring wire clamp',Mating:'Pluggable',Mounting:'PCB or panel',Applications:'Serviceable wiring'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/connectors/terminal-blocks/pluggable-terminal-blocks/',glyph:'≡',tags:['connector','wiring','service']},
+  {id:'mo-current-sensor',provider:'mouser',title:'Isolated Current Sensor',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'sensing',description:'A sensor that measures electrical current while maintaining galvanic isolation between the measured conductor and signal circuitry.',specs:{Measurement:'Current',Isolation:'Galvanic',Output:'Analog or digital',Applications:'Power monitoring and control'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/sensors/current-sensors/',glyph:'A',tags:['current','isolated','power']},
+  {id:'mo-imu',provider:'mouser',title:'Six Axis Inertial Measurement Unit',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'sensing',description:'A combined accelerometer and gyroscope that measures linear acceleration and angular velocity in three axes each.',specs:{Sensors:'3 axis accelerometer and gyroscope',Output:'Digital',Interface:'I²C or SPI',Applications:'Orientation and motion'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/sensors/motion-position-sensors/imus-inertial-measurement-units/',glyph:'6D',tags:['motion','orientation','IMU']},
+  {id:'mo-ambient-light',provider:'mouser',title:'Digital Ambient Light Sensor',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'optical',description:'A photometric sensor that reports surrounding illumination in a form suited to display control, logging, or light responsive devices.',specs:{Measurement:'Ambient illumination',Output:'Digital lux estimate',Interface:'Usually I²C',Applications:'Adaptive lighting'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/sensors/optical-sensors/ambient-light-sensors/',glyph:'☀',tags:['light','sensor','environment']},
+  {id:'mo-solid-state-relay',provider:'mouser',title:'Solid State Relay',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'power',description:'An electronically controlled switch that uses semiconductor devices and optical isolation instead of moving contacts.',specs:{Control:'Low voltage electronic input',Load:'AC or DC by type',Isolation:'Optical options',Feature:'No moving contacts'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/electromechanical/relays-contactors-solenoids/solid-state-relays-industrial-mount/',glyph:'SSR',tags:['switching','relay','isolated']},
+  {id:'mo-gnss',provider:'mouser',title:'Multi Constellation GNSS Module',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'control',description:'A receiver module that calculates position and time from multiple satellite navigation constellations.',specs:{Measurement:'Position and time',Signals:'GPS and other constellations',Output:'Serial or binary protocol',Applications:'Tracking and timing'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/rf-wireless/gps-gnss-modules/',glyph:'⌖',tags:['position','GNSS','time']},
+  {id:'mo-air-quality',provider:'mouser',title:'Air Quality Gas Sensor',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'sensing',description:'A sensor for estimating volatile organic compounds, carbon dioxide equivalents, particulate matter, or selected gases.',specs:{Measurement:'Gas or particulate indicator',Output:'Analog or digital',Use:'Environmental monitoring',Constraint:'Calibration and warmup vary'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/sensors/environmental-sensors/air-quality-sensors/',glyph:'AQ',tags:['environment','gas','sensor']},
+  {id:'mo-rgb-led',provider:'mouser',title:'Addressable RGB LED',partNumber:'Offline sample',manufacturer:'Multiple manufacturers',category:'optical',description:'A multicolor light source with integrated control electronics that can be chained and individually commanded.',specs:{Colors:'Red, green, and blue',Control:'Serial data',Feature:'Individually addressable',Applications:'Indicators and lighting'},price:'Live price via API',availability:'Use live mode for stock',productUrl:'https://www.mouser.com/c/optoelectronics/led-lighting/led-emitters/standard-leds-smd/',glyph:'RGB',tags:['light','color','addressable']}
+];
+
+const challengeConstraints = [
+  'The concept must be understandable when opened.',
+  'Use no microcontroller.',
+  'The finished object must be handheld.',
+  'It must help someone repair something.',
+  'Power it only from motion, light, or heat.',
+  'Use fewer than five additional parts.',
+  'Make the interaction visible rather than hidden.',
+  'The first test must be possible in under one hour.',
+  'It must survive outdoor use.',
+  'Make it useful as both a tool and an artwork.',
+  'Design it so the most likely failure is easy to repair.',
+  'Use the mechanical part as an interface, not just a mount.'
+];
+
+function defaultState(){
+  return {
+    version:APP_VERSION,
+    theme:window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light',
+    mode:'collision',
+    current:[],
+    currentChallenge:'',
+    currentCollisionNote:'',
+    shelf:[],
+    history:[],
+    settings:{
+      repeatWindow:20,defaultMode:'collision',preferLive:true,fallbackLocal:true,
+      mouserMode:'proxy',mouserProxy:DEFAULT_MOUSER_PROXY,mouserKey:'',
+      mcmasterMode:'local',mcmasterProxy:'',
+      showImages:true,showPrices:true,saveCollisionNotes:true,currencyLabel:'USD',
+      includedCategories:Object.fromEntries(categoryDefinitions.map(c=>[c.id,true]))
+    }
+  };
+}
+
+let state = loadState();
+let noteTargetId = null;
+let saveTimer = null;
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    const parsed=JSON.parse(raw);
+    const base=defaultState();
+    const merged={...base,...parsed,settings:{...base.settings,...(parsed.settings||{}),includedCategories:{...base.settings.includedCategories,...((parsed.settings||{}).includedCategories||{})}}};
+    const hadConfiguredProxy=Boolean((parsed.settings||{}).mouserProxy);
+    if(!hadConfiguredProxy){
+      merged.settings.mouserProxy=DEFAULT_MOUSER_PROXY;
+      merged.settings.mouserMode='proxy';
+      merged.settings.preferLive=true;
+    }else{
+      merged.settings.mouserProxy=normalizeMouserProxyUrl(merged.settings.mouserProxy);
+    }
+    merged.version=APP_VERSION;
+    return merged;
+  }catch(error){console.warn('Could not load state',error);return defaultState();}
+}
+
+function saveState(message){
+  clearTimeout(saveTimer);
+  document.getElementById('saveLed').style.background='var(--warn)';
+  saveTimer=setTimeout(()=>{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+    document.getElementById('saveLed').style.background='var(--good)';
+    updateCounts();
+    if(message) toast(message);
+  },120);
+}
+
+function escapeHtml(value=''){
+  return String(value).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+}
+function safeUrl(value=''){
+  try{
+    const url=new URL(String(value),window.location.href);
+    return ['http:','https:'].includes(url.protocol)?url.href:'';
+  }catch{return '';}
+}
+
+function normalizeMouserProxyUrl(value=''){
+  const raw=String(value||'').trim();
+  if(!raw) return '';
+  try{
+    const url=new URL(raw);
+    if(!['http:','https:'].includes(url.protocol)) return raw;
+    if(url.pathname===''||url.pathname==='/') url.pathname='/mouser';
+    return url.href.replace(/\/$/,'');
+  }catch{return raw;}
+}
+
+function secureRandomIndex(length){
+  if(length<=1) return 0;
+  const arr=new Uint32Array(1);crypto.getRandomValues(arr);return arr[0]%length;
+}
+function pick(array){return array[secureRandomIndex(array.length)];}
+function nowIso(){return new Date().toISOString();}
+function formatWhen(iso){try{return new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(new Date(iso));}catch{return iso;}}
+function categoryLabel(id){return categoryDefinitions.find(c=>c.id===id)?.label||id||'Other';}
+function providerLabel(provider){return provider==='mcmaster'?'McMaster Carr':'Mouser Electronics';}
+function includedCategoryIds(){return categoryDefinitions.filter(c=>state.settings.includedCategories[c.id]).map(c=>c.id);}
+
+function toast(message){
+  const el=document.getElementById('toast');el.textContent=message;el.classList.add('show');clearTimeout(el._timer);el._timer=setTimeout(()=>el.classList.remove('show'),Math.min(9000,Math.max(2400,String(message).length*55)));
+}
+
+function setTheme(theme){state.theme=theme;document.documentElement.dataset.theme=theme;saveState();}
+function toggleTheme(){setTheme(state.theme==='dark'?'light':'dark');}
+
+function navigate(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===`view-${view}`));
+  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
+  const titles={discover:'Discover',shelf:'Parts Shelf',history:'Draw History',settings:'Settings'};
+  document.getElementById('viewTitle').textContent=titles[view]||view;
+  if(view==='shelf') renderShelf();
+  if(view==='history') renderHistory();
+  if(view==='settings') renderSettings();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function setMode(mode){
+  state.mode=mode;
+  document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+  document.getElementById('drawButton').textContent=mode==='collision'?'DRAW TWO PARTS':mode==='mcmaster'?'DRAW A MECHANICAL PART':'DRAW AN ELECTRONIC PART';
+  saveState();
+}
+
+function eligibleLocal(provider){
+  const catalog=provider==='mcmaster'?mcmasterCatalog:mouserCatalog;
+  const quick=document.getElementById('quickCategory').value;
+  const included=new Set(includedCategoryIds());
+  return catalog.filter(p=>included.has(p.category)&&(quick==='all'||p.category===quick));
+}
+
+function recentIds(provider){
+  const n=Math.max(0,Number(state.settings.repeatWindow)||0);
+  return state.history.filter(h=>h.provider===provider).slice(0,n).map(h=>h.productId);
+}
+
+function drawLocal(provider){
+  let pool=eligibleLocal(provider);
+  if(!pool.length) throw new Error(`No included ${providerLabel(provider)} categories are available.`);
+  if(document.getElementById('quickFresh').checked){
+    const recent=new Set(recentIds(provider));
+    const fresh=pool.filter(p=>!recent.has(p.id));
+    if(fresh.length) pool=fresh;
+  }
+  return {...pick(pool),live:false,retrievedAt:nowIso()};
+}
+
+function mouserKeyword(){
+  const quick=document.getElementById('quickCategory').value;
+  let cats=categoryDefinitions.filter(c=>state.settings.includedCategories[c.id]);
+  if(quick!=='all') cats=cats.filter(c=>c.id===quick);
+  if(!cats.length) throw new Error('No categories are included.');
+  return pick(pick(cats).mouser);
+}
+
+function mouserRequestBody(keyword,records,startingRecord,inStock){
+  const nativeRequest={keyword,records,startingRecord,searchOptions:inStock?'InStock':'',searchWithYourSignUpLanguage:'English'};
+  // Include both forms so SERENDIPART works with its Worker and with simple
+  // pass-through proxies that expect Mouser's native request envelope.
+  return {keyword,records,startingRecord,inStock,SearchByKeywordRequest:nativeRequest};
+}
+
+async function readResponsePayload(response){
+  const text=await response.text();
+  if(!text) return {};
+  try{return JSON.parse(text);}catch{return {error:text.slice(0,500)};}
+}
+
+function findApiError(payload){
+  if(!payload) return '';
+  if(typeof payload==='string') return payload;
+  const direct=payload.error||payload.message||payload.Message||payload.ErrorMessage||payload.errorMessage;
+  if(direct) return typeof direct==='string'?direct:JSON.stringify(direct);
+  const errors=payload.Errors||payload.errors;
+  if(Array.isArray(errors)&&errors.length){
+    return errors.map(item=>typeof item==='string'?item:(item.Message||item.message||JSON.stringify(item))).join('; ');
+  }
+  return '';
+}
+
+function mouserFailureMessage(response,payload){
+  const detail=findApiError(payload);
+  const lower=detail.toLowerCase();
+  if(lower.includes('mouser_api_key')||lower.includes('api key')&&lower.includes('configur')){
+    return 'The Mouser Worker is online, but its MOUSER_API_KEY secret is not configured.';
+  }
+  if(response.status===401||response.status===403){
+    return `Mouser rejected the API credentials (${response.status})${detail?`: ${detail}`:'.'}`;
+  }
+  if(response.status===429){
+    return `Mouser API rate limit reached${detail?`: ${detail}`:'.'}`;
+  }
+  return `Mouser request failed with ${response.status}${detail?`: ${detail}`:'.'}`;
+}
+
+async function drawMouserLive(){
+  const keyword=mouserKeyword();
+  const inStock=document.getElementById('quickStock').checked;
+  let endpoint,body,headers={'Content-Type':'application/json','Accept':'application/json'};
+  if(state.settings.mouserMode==='proxy'){
+    if(!state.settings.mouserProxy) throw new Error('Mouser proxy endpoint is not configured.');
+    endpoint=normalizeMouserProxyUrl(state.settings.mouserProxy);
+    body=mouserRequestBody(keyword,50,0,inStock);
+  }else if(state.settings.mouserMode==='direct'){
+    if(!state.settings.mouserKey) throw new Error('Mouser API key is not configured.');
+    endpoint=`https://api.mouser.com/api/v1/search/keyword?apiKey=${encodeURIComponent(state.settings.mouserKey)}`;
+    body={SearchByKeywordRequest:mouserRequestBody(keyword,50,0,inStock).SearchByKeywordRequest};
+  }else return drawLocal('mouser');
+  let response;
+  try{
+    response=await fetch(endpoint,{method:'POST',headers,body:JSON.stringify(body)});
+  }catch(error){
+    throw new Error(`Could not reach the Mouser endpoint: ${error.message||'network error'}`);
+  }
+  const data=await readResponsePayload(response);
+  if(!response.ok) throw new Error(mouserFailureMessage(response,data));
+  const parts=extractMouserParts(data);
+  if(!parts.length){
+    const detail=findApiError(data);
+    throw new Error(detail||`No Mouser results were returned for “${keyword}”.`);
+  }
+  let choices=parts;
+  if(document.getElementById('quickFresh').checked){
+    const recent=new Set(recentIds('mouser'));
+    const fresh=parts.filter(p=>!recent.has(`mouser:${p.MouserPartNumber||p.ManufacturerPartNumber}`));
+    if(fresh.length) choices=fresh;
+  }
+  return normalizeMouserPart(pick(choices),keyword);
+}
+
+function extractMouserParts(data){
+  const root=data.SearchResults||data.searchResults||data;
+  const parts=root.Parts||root.parts||[];
+  if(Array.isArray(parts)) return parts;
+  if(Array.isArray(parts.Part)) return parts.Part;
+  return [];
+}
+
+function normalizeMouserPart(p,keyword){
+  const priceBreaks=p.PriceBreaks||p.priceBreaks||[];
+  const firstPrice=Array.isArray(priceBreaks)&&priceBreaks[0]?(priceBreaks[0].Price||priceBreaks[0].price):'';
+  const categoryText=p.Category||p.category||keyword;
+  const inferred=inferCategory(categoryText+' '+keyword);
+  return {
+    id:`mouser:${p.MouserPartNumber||p.mouserPartNumber||p.ManufacturerPartNumber||p.manufacturerPartNumber||crypto.randomUUID()}`,
+    provider:'mouser',live:true,retrievedAt:nowIso(),
+    title:p.Description||p.description||p.ManufacturerPartNumber||'Mouser product',
+    partNumber:p.MouserPartNumber||p.mouserPartNumber||'',
+    manufacturerPartNumber:p.ManufacturerPartNumber||p.manufacturerPartNumber||'',
+    manufacturer:p.Manufacturer||p.manufacturer||'',
+    category:inferred,
+    categoryOriginal:categoryText,
+    description:p.Description||p.description||'Live product information returned by Mouser Search API.',
+    specs:{Manufacturer:p.Manufacturer||p.manufacturer||'—',Packaging:p.Packaging||p.packaging||'—',Lifecycle:p.LifecycleStatus||p.lifecycleStatus||'—',RoHS:p.ROHSStatus||p.rohsStatus||p.RoHSStatus||'—'},
+    price:firstPrice||'No price returned',
+    availability:p.Availability||p.availability||'Availability not returned',
+    productUrl:p.ProductDetailUrl||p.productDetailUrl||'https://www.mouser.com/',
+    datasheetUrl:p.DataSheetUrl||p.dataSheetUrl||'',
+    imageUrl:p.ImagePath||p.imagePath||'',
+    glyph:'µ',tags:[keyword,'live API',categoryText].filter(Boolean)
+  };
+}
+
+function inferCategory(text=''){
+  const t=text.toLowerCase();
+  const rules=[['sensing',['sensor','accelerometer','pressure','measurement','transducer']],['motion',['motor','encoder','actuator','motion']],['power',['power','battery','converter','relay','capacitor']],['control',['microcontroller','processor','development','logic','embedded']],['interface',['switch','display','button','touch']],['optical',['led','optical','photo','laser']],['thermal',['thermal','heat','fan','blower']],['fastening',['connector','terminal','splice']],['fluid',['fluid','pump','valve','flow']],['structure',['enclosure','case','rail']]];
+  return rules.find(([,words])=>words.some(w=>t.includes(w)))?.[0]||'control';
+}
+
+async function drawMcMasterLive(){
+  if(state.settings.mcmasterMode!=='proxy') return drawLocal('mcmaster');
+  if(!state.settings.mcmasterProxy) throw new Error('McMaster proxy endpoint is not configured.');
+  const response=await fetch(state.settings.mcmasterProxy,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'random-product',includedCategories:includedCategoryIds(),avoidIds:recentIds('mcmaster')})});
+  if(!response.ok) throw new Error(`McMaster proxy failed with ${response.status}.`);
+  const p=await response.json();
+  if(!p||!p.title) throw new Error('McMaster proxy returned an invalid product.');
+  return {id:p.id||`mcmaster:${p.partNumber||crypto.randomUUID()}`,provider:'mcmaster',live:true,retrievedAt:nowIso(),title:p.title,partNumber:p.partNumber||'',category:p.category||'structure',description:p.description||'',specs:p.specs||{},price:p.price||'See supplier',availability:p.availability||'Current data from proxy',productUrl:p.productUrl||'https://www.mcmaster.com/',datasheetUrl:p.datasheetUrl||'',imageUrl:p.imageUrl||'',glyph:'MC',tags:p.tags||['live proxy']};
+}
+
+async function drawProvider(provider){
+  try{
+    if(provider==='mouser'&&state.settings.preferLive&&state.settings.mouserMode!=='local') return await drawMouserLive();
+    if(provider==='mcmaster'&&state.settings.preferLive&&state.settings.mcmasterMode==='proxy') return await drawMcMasterLive();
+    return drawLocal(provider);
+  }catch(error){
+    if(state.settings.fallbackLocal){toast(`${error.message} Using local catalog.`);return drawLocal(provider);}
+    throw error;
+  }
+}
+
+async function performDraw(){
+  const button=document.getElementById('drawButton');
+  button.disabled=true;button.innerHTML='<span class="loading"><i></i><i></i><i></i></span> DRAWING';
+  try{
+    let products=[];
+    if(state.mode==='collision') products=await Promise.all([drawProvider('mcmaster'),drawProvider('mouser')]);
+    else products=[await drawProvider(state.mode)];
+    state.current=products;
+    state.currentChallenge=state.mode==='collision'?buildChallenge(products[0],products[1]):'';
+    state.currentCollisionNote='';
+    products.forEach(product=>recordHistory(product,state.mode));
+    renderCurrent();
+    saveState();
+    toast(state.mode==='collision'?'Collision drawn':'Part drawn');
+  }catch(error){
+    console.error(error);toast(error.message||'The draw failed.');
+  }finally{
+    button.disabled=false;setMode(state.mode);
+  }
+}
+
+function buildChallenge(a,b){
+  const constraint=pick(challengeConstraints);
+  const verbs=['measure','move','reveal','protect','signal','teach','repair','balance','record','transform'];
+  return `Create a device that uses the ${a.title.toLowerCase()} and the ${b.title.toLowerCase()} to ${pick(verbs)} something in the physical world. ${constraint}`;
+}
+
+function recordHistory(product,mode){
+  state.history.unshift({id:crypto.randomUUID(),drawnAt:nowIso(),provider:product.provider,productId:product.id,title:product.title,partNumber:product.partNumber||product.manufacturerPartNumber||'',category:product.category,mode,productUrl:product.productUrl||'',live:!!product.live});
+  if(state.history.length>500) state.history.length=500;
+}
+
+function renderCurrent(){
+  const empty=document.getElementById('emptyState');
+  const cards=document.getElementById('resultCards');
+  const collision=document.getElementById('collisionArea');
+  if(!state.current.length){empty.style.display='block';cards.innerHTML='';collision.innerHTML='';return;}
+  empty.style.display='none';cards.className=`results ${state.current.length===1?'single':''}`;cards.innerHTML=state.current.map(productCardHtml).join('');
+  collision.innerHTML=state.current.length===2?collisionHtml():'';
+  cards.querySelectorAll('.product-image img').forEach(img=>img.addEventListener('error',()=>{
+    const holder=img.closest('.product-image');
+    if(!holder) return;
+    const glyph=document.createElement('div');glyph.className='part-glyph';
+    const span=document.createElement('span');span.textContent=img.dataset.glyph||'•';glyph.appendChild(span);holder.replaceChildren(glyph);
+  },{once:true}));
+  cards.querySelectorAll('[data-save-part]').forEach(btn=>btn.addEventListener('click',()=>savePart(btn.dataset.savePart)));
+  cards.querySelectorAll('[data-note-part]').forEach(btn=>btn.addEventListener('click',()=>openNote(btn.dataset.notePart)));
+  const collisionNote=document.getElementById('collisionNote');
+  if(collisionNote) collisionNote.addEventListener('input',e=>{state.currentCollisionNote=e.target.value;saveState();});
+  const saveCollision=document.getElementById('saveCollision');if(saveCollision) saveCollision.addEventListener('click',saveCurrentCollision);
+  const rerollChallenge=document.getElementById('rerollChallenge');if(rerollChallenge) rerollChallenge.addEventListener('click',()=>{state.currentChallenge=buildChallenge(state.current[0],state.current[1]);renderCurrent();saveState();});
+}
+
+function productCardHtml(p){
+  const saved=state.shelf.some(s=>s.id===p.id);
+  const imageUrl=safeUrl(p.imageUrl);
+  const productUrl=safeUrl(p.productUrl);
+  const datasheetUrl=safeUrl(p.datasheetUrl);
+  const supplierPartNumber=p.partNumber||p.manufacturerPartNumber||'Product family';
+  const isSpecificPart=!['Product family','Offline sample','Design prompt'].includes(supplierPartNumber);
+  const partNumberLabel=isSpecificPart?'Supplier part number':'Supplier catalog';
+  const partNumberValue=productUrl?`<a class="part-number-link" href="${escapeHtml(productUrl)}" target="_blank" rel="noopener" title="Open this product at ${escapeHtml(providerLabel(p.provider))}">${escapeHtml(supplierPartNumber)} ↗</a>`:`<span class="part-number-value">${escapeHtml(supplierPartNumber)}</span>`;
+  const manufacturerPartNumber=p.manufacturerPartNumber&&p.manufacturerPartNumber!==supplierPartNumber?`<span class="part-number-secondary">Manufacturer part number: ${escapeHtml(p.manufacturerPartNumber)}</span>`:'';
+  const image=state.settings.showImages&&imageUrl?`<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(p.title)}" data-glyph="${escapeHtml(p.glyph||'•')}">`:`<div class="part-glyph"><span>${escapeHtml(p.glyph||'•')}</span></div>`;
+  const specs=Object.entries(p.specs||{}).slice(0,8).map(([k,v])=>`<div class="spec"><strong>${escapeHtml(k)}</strong><span>${escapeHtml(Array.isArray(v)?v.join(', '):v)}</span></div>`).join('');
+  return `<article class="product-card">
+    <div class="product-head"><span class="provider">${escapeHtml(providerLabel(p.provider))}</span><span class="live-badge">${p.live?'LIVE DATA':'LOCAL DISCOVERY'}</span></div>
+    <div class="product-image">${image}</div>
+    <div class="product-body">
+      <div class="product-kicker"><span class="category-tag">${escapeHtml(categoryLabel(p.category))}</span>${p.manufacturer?`<span>${escapeHtml(p.manufacturer)}</span>`:''}</div>
+      <h4 class="product-title">${escapeHtml(p.title)}</h4>
+      <div class="part-number"><span class="part-number-label">${partNumberLabel}</span>${partNumberValue}${manufacturerPartNumber}</div>
+      <p class="description">${escapeHtml(p.description)}</p>
+      <div class="spec-grid">${specs}</div>
+      ${state.settings.showPrices?`<div class="price-line"><div><div class="price">${escapeHtml(p.price||'See supplier')}</div><small>${escapeHtml(state.settings.currencyLabel||'USD')}</small></div><div class="availability">${escapeHtml(p.availability||'')}</div></div>`:''}
+      <div class="card-actions">
+        <button class="primary" data-save-part="${escapeHtml(p.id)}">${saved?'SAVED':'SAVE TO SHELF'}</button>
+        <button data-note-part="${escapeHtml(p.id)}">ADD NOTE</button>
+        ${productUrl?`<a href="${escapeHtml(productUrl)}" target="_blank" rel="noopener">OPEN SUPPLIER</a>`:''}
+        ${datasheetUrl?`<a href="${escapeHtml(datasheetUrl)}" target="_blank" rel="noopener">DATASHEET</a>`:''}
+      </div>
+    </div>
+  </article>`;
+}
+
+function collisionHtml(){
+  return `<section class="collision"><div class="eyebrow">Collision prompt</div><h4>What could these become together?</h4><p class="prompt">${escapeHtml(state.currentChallenge)}</p><p>Record the smallest test that would reveal whether the idea has promise.</p><textarea id="collisionNote" placeholder="Concept name, intended function, connection between parts, missing components, first experiment…">${escapeHtml(state.currentCollisionNote||'')}</textarea><div class="collision-actions"><button class="mode-btn" id="saveCollision">SAVE PAIR AND NOTE</button><button class="mode-btn" id="rerollChallenge">NEW CONSTRAINT</button></div></section>`;
+}
+
+function savePart(id){
+  const p=state.current.find(x=>x.id===id)||[...mcmasterCatalog,...mouserCatalog].find(x=>x.id===id);
+  if(!p) return;
+  const existing=state.shelf.find(x=>x.id===id);
+  if(existing){toast('This part is already on the shelf.');return;}
+  state.shelf.unshift({...p,savedAt:nowIso(),note:''});
+  saveState('Saved to Parts Shelf');renderCurrent();
+}
+
+function saveCurrentCollision(){
+  state.current.forEach(p=>{
+    const existing=state.shelf.find(x=>x.id===p.id);
+    if(existing){if(state.settings.saveCollisionNotes&&state.currentCollisionNote) existing.note=[existing.note,state.currentCollisionNote].filter(Boolean).join('\n\n');}
+    else state.shelf.unshift({...p,savedAt:nowIso(),note:state.settings.saveCollisionNotes?state.currentCollisionNote:''});
+  });
+  state.shelf.unshift({id:`collision:${crypto.randomUUID()}`,provider:'collision',title:'Collision: '+state.current.map(p=>p.title).join(' + '),partNumber:'Design prompt',category:'control',description:state.currentChallenge,specs:{Mechanical:state.current[0].title,Electronic:state.current[1].title},price:'',availability:'',productUrl:'',glyph:'×',tags:['collision','concept'],savedAt:nowIso(),note:state.currentCollisionNote,isCollision:true,partIds:state.current.map(p=>p.id)});
+  saveState('Collision saved');renderCurrent();
+}
+
+function openNote(id){
+  const item=state.shelf.find(x=>x.id===id)||state.current.find(x=>x.id===id);
+  if(!item) return;
+  noteTargetId=id;document.getElementById('noteTitle').textContent='Note for '+item.title;document.getElementById('noteSubtitle').textContent='Capture a possible use, observation, interface, or unresolved question.';document.getElementById('noteText').value=(state.shelf.find(x=>x.id===id)?.note)||'';document.getElementById('noteModal').classList.add('open');document.getElementById('noteText').focus();
+}
+function closeModal(){document.getElementById('noteModal').classList.remove('open');noteTargetId=null;}
+function commitNote(){
+  const text=document.getElementById('noteText').value.trim();let item=state.shelf.find(x=>x.id===noteTargetId);
+  if(!item){const p=state.current.find(x=>x.id===noteTargetId);if(p){item={...p,savedAt:nowIso(),note:text};state.shelf.unshift(item);}}
+  else item.note=text;
+  saveState('Note saved');closeModal();renderCurrent();renderShelf();
+}
+
+function renderShelf(){
+  const grid=document.getElementById('shelfGrid');const q=(document.getElementById('shelfSearch').value||'').toLowerCase();const source=document.getElementById('shelfSource').value;
+  const items=state.shelf.filter(p=>(source==='all'||p.provider===source)&&(p.title+' '+p.description+' '+(p.note||'')+' '+(p.tags||[]).join(' ')).toLowerCase().includes(q));
+  if(!items.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1">No saved parts match this view.</div>';return;}
+  grid.innerHTML=items.map(p=>{const url=safeUrl(p.productUrl);const partNumber=p.partNumber||p.manufacturerPartNumber||'';const shelfPartLabel=p.isCollision?'Reference':(['Product family','Offline sample','Design prompt'].includes(partNumber)?'Supplier catalog':'Supplier part number');const partNumberMarkup=partNumber?`<div class="part-number"><span class="part-number-label">${shelfPartLabel}</span>${url?`<a class="part-number-link" href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(partNumber)} ↗</a>`:`<span class="part-number-value">${escapeHtml(partNumber)}</span>`}</div>`:'';return `<article class="library-card"><div class="library-meta"><span>${escapeHtml(p.provider==='collision'?'Collision':providerLabel(p.provider))}</span><span>${escapeHtml(categoryLabel(p.category))}</span><span>${escapeHtml(formatWhen(p.savedAt))}</span></div><h4>${escapeHtml(p.title)}</h4>${partNumberMarkup}<p>${escapeHtml(p.description||'')}</p><textarea data-shelf-note="${escapeHtml(p.id)}" placeholder="Add notes…">${escapeHtml(p.note||'')}</textarea><div class="library-actions">${url?`<a href="${escapeHtml(url)}" target="_blank" rel="noopener">Open supplier</a>`:''}<button data-redraw="${escapeHtml(p.id)}">Show card</button><button data-remove="${escapeHtml(p.id)}">Remove</button></div></article>`;}).join('');
+  grid.querySelectorAll('[data-shelf-note]').forEach(el=>el.addEventListener('change',()=>{const item=state.shelf.find(x=>x.id===el.dataset.shelfNote);if(item){item.note=el.value;saveState('Shelf note saved');}}));
+  grid.querySelectorAll('[data-remove]').forEach(btn=>btn.addEventListener('click',()=>{state.shelf=state.shelf.filter(x=>x.id!==btn.dataset.remove);saveState('Removed from shelf');renderShelf();renderCurrent();}));
+  grid.querySelectorAll('[data-redraw]').forEach(btn=>btn.addEventListener('click',()=>{const p=state.shelf.find(x=>x.id===btn.dataset.redraw);if(p&&!p.isCollision){state.current=[p];state.currentChallenge='';navigate('discover');renderCurrent();}}));
+}
+
+function renderHistory(){
+  const body=document.getElementById('historyBody');const q=(document.getElementById('historySearch').value||'').toLowerCase();const source=document.getElementById('historySource').value;
+  const rows=state.history.filter(h=>(source==='all'||h.provider===source)&&(h.title+' '+h.partNumber+' '+categoryLabel(h.category)).toLowerCase().includes(q));
+  body.innerHTML=rows.length?rows.map(h=>{const url=safeUrl(h.productUrl);return `<tr><td>${escapeHtml(formatWhen(h.drawnAt))}</td><td><span class="source-dot ${h.provider==='mouser'?'mouser':''}"></span>${escapeHtml(providerLabel(h.provider))}${h.live?' · live':''}</td><td>${escapeHtml(h.title)}</td><td>${url?`<a class="part-number-link" href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(h.partNumber||'—')} ↗</a>`:`<code>${escapeHtml(h.partNumber||'—')}</code>`}</td><td>${escapeHtml(categoryLabel(h.category))}</td><td>${escapeHtml(h.mode)}</td><td>${state.shelf.some(s=>s.id===h.productId)?'Yes':'No'}</td><td>${url?`<a href="${escapeHtml(url)}" target="_blank" rel="noopener">Open</a>`:'—'}</td></tr>`;}).join(''):'<tr><td colspan="8">No draw history matches this view.</td></tr>';
+}
+
+function populateQuickCategories(){
+  const select=document.getElementById('quickCategory');const current=select.value||'all';select.innerHTML='<option value="all">Any included category</option>'+categoryDefinitions.filter(c=>state.settings.includedCategories[c.id]).map(c=>`<option value="${c.id}">${escapeHtml(c.label)}</option>`).join('');select.value=[...select.options].some(o=>o.value===current)?current:'all';
+}
+
+function renderSettings(){
+  document.getElementById('repeatWindow').value=state.settings.repeatWindow;
+  document.getElementById('defaultMode').value=state.settings.defaultMode;
+  document.getElementById('preferLive').checked=state.settings.preferLive;
+  document.getElementById('fallbackLocal').checked=state.settings.fallbackLocal;
+  document.getElementById('mouserMode').value=state.settings.mouserMode;
+  document.getElementById('mouserProxy').value=state.settings.mouserProxy;
+  document.getElementById('mouserKey').value=state.settings.mouserKey;
+  document.getElementById('mcmasterMode').value=state.settings.mcmasterMode;
+  document.getElementById('mcmasterProxy').value=state.settings.mcmasterProxy;
+  document.getElementById('showImages').checked=state.settings.showImages;
+  document.getElementById('showPrices').checked=state.settings.showPrices;
+  document.getElementById('saveCollisionNotes').checked=state.settings.saveCollisionNotes;
+  document.getElementById('currencyLabel').value=state.settings.currencyLabel;
+  const list=document.getElementById('categoryList');list.innerHTML=categoryDefinitions.map(c=>`<label class="category-check"><input type="checkbox" data-category="${c.id}" ${state.settings.includedCategories[c.id]?'checked':''}> ${escapeHtml(c.label)}</label>`).join('');
+  list.querySelectorAll('[data-category]').forEach(el=>el.addEventListener('change',()=>{state.settings.includedCategories[el.dataset.category]=el.checked;populateQuickCategories();saveState();}));
+}
+
+function syncSettingsFromControls(){
+  state.settings.repeatWindow=Math.min(100,Math.max(0,Number(document.getElementById('repeatWindow').value)||0));
+  state.settings.defaultMode=document.getElementById('defaultMode').value;
+  state.settings.preferLive=document.getElementById('preferLive').checked;
+  state.settings.fallbackLocal=document.getElementById('fallbackLocal').checked;
+  state.settings.mouserMode=document.getElementById('mouserMode').value;
+  state.settings.mouserProxy=normalizeMouserProxyUrl(document.getElementById('mouserProxy').value);
+  state.settings.mouserKey=document.getElementById('mouserKey').value.trim();
+  state.settings.mcmasterMode=document.getElementById('mcmasterMode').value;
+  state.settings.mcmasterProxy=document.getElementById('mcmasterProxy').value.trim();
+  state.settings.showImages=document.getElementById('showImages').checked;
+  state.settings.showPrices=document.getElementById('showPrices').checked;
+  state.settings.saveCollisionNotes=document.getElementById('saveCollisionNotes').checked;
+  state.settings.currencyLabel=document.getElementById('currencyLabel').value.trim()||'USD';
+  saveState();renderCurrent();
+}
+
+function setMouserStatus(message,kind=''){
+  const el=document.getElementById('mouserStatus');
+  if(!el) return;
+  el.textContent=message;el.className=`connection-status ${kind}`.trim();
+}
+
+async function testMouser(){
+  syncSettingsFromControls();const btn=document.getElementById('testMouser');const old=btn.textContent;btn.disabled=true;btn.textContent='Testing…';
+  setMouserStatus('Contacting the configured Mouser endpoint…','testing');
+  try{
+    if(state.settings.mouserMode==='local'){setMouserStatus('Local Mouser catalog is ready.','ok');toast('Local Mouser catalog is ready.');return;}
+    const p=await drawMouserLive();
+    setMouserStatus(`Connected successfully. Returned ${p.partNumber||p.manufacturerPartNumber||p.title}.`,'ok');
+    toast(`Mouser connection works: ${p.title}`);
+  }catch(error){
+    const message=error.message||'Mouser connection failed.';
+    setMouserStatus(`${message}\n\nFor this Worker, confirm that a Cloudflare secret named MOUSER_API_KEY contains an approved Mouser Search API key, then redeploy the Worker.`,'error');
+    toast(message);
+  }finally{btn.disabled=false;btn.textContent=old;}
+}
+async function testMcMaster(){
+  syncSettingsFromControls();const btn=document.getElementById('testMcMaster');const old=btn.textContent;btn.disabled=true;btn.textContent='Testing…';
+  try{if(state.settings.mcmasterMode==='local'){toast('Local McMaster discovery catalog is ready.');return;}const p=await drawMcMasterLive();toast(`McMaster connection works: ${p.title}`);}catch(error){toast(error.message);}finally{btn.disabled=false;btn.textContent=old;}
+}
+
+function exportData(){
+  syncSettingsFromControls();
+  const portable=structuredClone(state);portable.settings.mouserKey='';
+  const blob=new Blob([JSON.stringify({app:'SERENDIPART',version:APP_VERSION,exportedAt:nowIso(),state:portable},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`serendipart-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('JSON exported without API secrets');
+}
+async function importDataFile(file){
+  try{const parsed=JSON.parse(await file.text());const incoming=parsed.state||parsed;if(!incoming.settings||!Array.isArray(incoming.history)||!Array.isArray(incoming.shelf)) throw new Error('This does not look like a SERENDIPART export.');const base=defaultState();state={...base,...incoming,settings:{...base.settings,...incoming.settings,includedCategories:{...base.settings.includedCategories,...(incoming.settings.includedCategories||{})}}};saveState('Data imported');initUI();}catch(error){toast(error.message);}
+}
+function loadDemoActivity(){
+  const a={...mcmasterCatalog[2],savedAt:nowIso(),note:'Could become a removable datum stop for a portable measuring jig.'};
+  const b={...mouserCatalog[0],savedAt:nowIso(),note:'Pair with the shaft collar to measure rotational imbalance.'};
+  state.shelf=[a,b,...state.shelf.filter(x=>x.id!==a.id&&x.id!==b.id)];
+  [a,b,mcmasterCatalog[6],mouserCatalog[8]].forEach((p,i)=>state.history.unshift({id:crypto.randomUUID(),drawnAt:new Date(Date.now()-i*3600000).toISOString(),provider:p.provider,productId:p.id,title:p.title,partNumber:p.partNumber||'',category:p.category,mode:i<2?'collision':p.provider,productUrl:p.productUrl,live:false}));
+  saveState('Demo activity loaded');renderShelf();renderHistory();
+}
+function resetInstrument(){
+  if(!confirm('Reset SERENDIPART and delete local history, saved parts, notes, and settings?')) return;
+  state=defaultState();localStorage.removeItem(STORAGE_KEY);initUI();toast('Instrument reset');
+}
+
+function updateCounts(){document.getElementById('drawCountSide').textContent=state.history.length;document.getElementById('saveCountSide').textContent=state.shelf.length;document.getElementById('dataStatus').textContent=state.settings.preferLive&&state.settings.mouserMode==='proxy'?'Live Mouser proxy with fallback':state.settings.preferLive?'Live preferred with fallback':'Local catalog ready';}
+function updateClock(){document.getElementById('clockPill').textContent=new Intl.DateTimeFormat(undefined,{hour:'numeric',minute:'2-digit'}).format(new Date());}
+
+function bindEvents(){
+  document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>navigate(btn.dataset.view)));
+  document.querySelectorAll('[data-mode]').forEach(btn=>btn.addEventListener('click',()=>setMode(btn.dataset.mode)));
+  document.getElementById('drawButton').addEventListener('click',performDraw);
+  document.getElementById('themeToggle').addEventListener('click',toggleTheme);
+  document.getElementById('shelfSearch').addEventListener('input',renderShelf);document.getElementById('shelfSource').addEventListener('change',renderShelf);
+  document.getElementById('historySearch').addEventListener('input',renderHistory);document.getElementById('historySource').addEventListener('change',renderHistory);
+  document.getElementById('clearHistory').addEventListener('click',()=>{if(confirm('Clear draw history?')){state.history=[];saveState('History cleared');renderHistory();}});
+  ['repeatWindow','defaultMode','preferLive','fallbackLocal','mouserMode','mouserProxy','mouserKey','mcmasterMode','mcmasterProxy','showImages','showPrices','saveCollisionNotes','currencyLabel'].forEach(id=>document.getElementById(id).addEventListener('change',syncSettingsFromControls));
+  document.getElementById('testMouser').addEventListener('click',testMouser);document.getElementById('testMcMaster').addEventListener('click',testMcMaster);
+  document.getElementById('exportData').addEventListener('click',exportData);document.getElementById('importData').addEventListener('change',e=>{if(e.target.files[0])importDataFile(e.target.files[0]);e.target.value='';});
+  document.getElementById('loadDemo').addEventListener('click',loadDemoActivity);document.getElementById('resetApp').addEventListener('click',resetInstrument);
+  document.querySelectorAll('[data-close-modal]').forEach(b=>b.addEventListener('click',closeModal));document.getElementById('saveNote').addEventListener('click',commitNote);document.getElementById('noteModal').addEventListener('click',e=>{if(e.target.id==='noteModal')closeModal();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&document.getElementById('view-discover').classList.contains('active'))performDraw();});
+}
+
+function initUI(){
+  document.documentElement.dataset.theme=state.theme;
+  populateQuickCategories();renderSettings();setMode(state.mode||state.settings.defaultMode);renderCurrent();renderShelf();renderHistory();updateCounts();updateClock();
+}
+
+bindEvents();initUI();setInterval(updateClock,30000);
+</script>
+</body>
+</html>
